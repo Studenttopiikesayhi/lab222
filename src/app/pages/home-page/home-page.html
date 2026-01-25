@@ -1,0 +1,113 @@
+<div class="main-container">
+
+  <h1 style="width: 100%; text-align: center; color: #333; margin-bottom: 30px;">
+    🚀 AREA CALCULATOR
+  </h1>
+
+  <div class="card rectangle-card">
+    <div class="card-header bg-purple">
+      <h3>สี่เหลี่ยม (Rectangle)</h3>
+    </div>
+    <div class="card-body">
+      <label>ความกว้าง:</label>
+      <input type="number" [(ngModel)]="width">
+
+      <label>ความยาว:</label>
+      <input type="number" [(ngModel)]="length">
+
+      <button (click)="calRect()" class="btn-purple">คำนวณ</button>
+
+      <div class="result">
+        ผลลัพธ์: <b>{{ rectArea | number:'1.0-2' }}</b> ตร.ม.
+      </div>
+    </div>
+  </div>
+
+  <div class="card triangle-card">
+    <div class="card-header bg-orange">
+      <h3>สามเหลี่ยม (Triangle)</h3>
+    </div>
+    <div class="card-body">
+      <label>ฐาน:</label>
+      <input type="number" [(ngModel)]="triBase">
+
+      <label>ความสูง:</label>
+      <input type="number" [(ngModel)]="triHeight">
+
+      <button (click)="calTri()" class="btn-orange">คำนวณ</button>
+
+      <div class="result">
+        ผลลัพธ์: <b>{{ triArea | number:'1.0-2' }}</b> ตร.ม.
+      </div>
+    </div>
+  </div>
+
+  <div class="card circle-card">
+    <div class="card-header bg-blue">
+      <h3>วงกลม (Circle)</h3>
+    </div>
+    <div class="card-body">
+      <label>รัศมี:</label>
+      <input type="number" [(ngModel)]="radius">
+
+      <div style="height: 72px;"></div> <button (click)="calCircle()" class="btn-blue">คำนวณ</button>
+
+      <div class="result">
+        ผลลัพธ์: <b>{{ cirArea | number:'1.0-2' }}</b> ตร.ม.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+  /* จัดเรียงแนวนอน */
+  .main-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    font-family: 'Kanit', sans-serif;
+  }
+
+  /* การ์ดพื้นฐาน */
+  .card {
+    background: white;
+    width: 300px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .card:hover { transform: translateY(-5px); }
+
+  /* หัวการ์ด */
+  .card-header { padding: 15px; color: white; text-align: center; }
+  .card-header h3 { margin: 0; font-size: 18px; }
+
+  /* สีต่างๆ */
+  .bg-purple { background: #6200ea; }
+  .bg-orange { background: #ff6d00; }
+  .bg-blue   { background: #0091ea; }
+
+  /* ปุ่มต่างๆ */
+  .btn-purple { background: #6200ea; color: white; }
+  .btn-orange { background: #ff6d00; color: white; }
+  .btn-blue   { background: #0091ea; color: white; }
+
+  /* เนื้อหา */
+  .card-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+
+  input {
+    padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;
+  }
+
+  button {
+    padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px;
+  }
+
+  .result {
+    margin-top: 15px; text-align: center; font-size: 18px; color: #333;
+  }
+</style>

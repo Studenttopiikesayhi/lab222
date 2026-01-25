@@ -1,0 +1,23 @@
+/* 1. ข้อความเตือนสีแดง (เวลาลืมกรอก) */
+.error-msg {
+  color: #dc2626;      /* สีแดงเข้ม */
+  font-size: 12px;     /* ตัวหนังสือเล็กหน่อย */
+  margin-top: 4px;     /* เว้นห่างจากช่องกรอกนิดนึง */
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 2. ถ้าช่องไหนกรอกผิด/ลืมกรอก ให้ขอบเป็นสีแดง + พื้นหลังแดงจางๆ */
+.form-input.ng-invalid.ng-touched {
+  border-color: #dc2626;
+  background-color: #fef2f2;
+}
+
+/* 3. ปุ่มกดไม่ได้ (Disable) ให้เป็นสีเทา */
+button:disabled {
+  background-color: #9ca3af !important; /* สีเทา */
+  cursor: not-allowed;    /* เมาส์เป็นรูปห้ามจอด */
+  opacity: 0.7;           /* จางลงหน่อย */
+}
