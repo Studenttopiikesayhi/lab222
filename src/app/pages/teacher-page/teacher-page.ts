@@ -1,117 +1,188 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Teacher } from '../../classes/teacher-class';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { TeacherService } from '../../services/teacher-service';
 
 @Component({
   selector: 'app-teacher-page',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './teacher-page.html',
-  styleUrl: './teacher-page.css'
+  styleUrls: ['./teacher-page.css']
 })
-export class TeacherPage {
-  isListView: boolean = true;
-  uploadedImage: string = 'https://via.placeholder.com/150?text=No+Image';
-
-  // ตัวแปรสำหรับโหมดแก้ไข
+export class TeacherPageComponent implements OnInit {
+  teacherForm: FormGroup;
+  selectedFile: File | null = null;
   isEditMode: boolean = false;
-  editingIndex: number = -1;
+  teachers: any[] = [];
+  isListView: boolean = true;
+  uploadedImage: any = 'https://via.placeholder.com/150';
+  currentEditId: string = '';
 
-  teacherForm = new FormGroup({
-    teacherId: new FormControl('', [Validators.required, Validators.pattern(/^T\d+/)]),
-    teacherName: new FormControl('', [Validators.required]),
-    department: new FormControl('', [Validators.required]),
-  });
+  constructor(
+    private fb: FormBuilder,
+    private teacherService: TeacherService,
+    private cdr: ChangeDetectorRef
+  ) {
+    this.teacherForm = this.fb.group({
+      teacherId: ['', Validators.required],
+      teacherName: ['', Validators.required],
+      department: ['', Validators.required]
+    });
+  }
 
-  teachers: Teacher[] = [
-    { teacherId: 'T001', teacherName: 'อ.วัชรพงศ์', department: 'Software Engineering', teacherPicture: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Felix' },
-    { teacherId: 'T002', teacherName: 'อ.สมหญิง', department: 'Computer Science', teacherPicture: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Aneka' },
-    { teacherId: 'T003', teacherName: 'อ.สมชาย', department: 'Information Technology', teacherPicture: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Bob' }
-  ];
+  ngOnInit(): void {
+    this.getData();
+  }
 
-  onFileSelected(event: any) {
-    const file: File = event.target.files[0];
-    if (file) {
+  getData(): void {
+    this.teacherService.getAll().subscribe({
+      next: (res: any): void => {
+        if (res && res.result === 1) {
+          this.teachers = res.data || [];
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err: any): void => console.error('Error fetching data:', err)
+    });
+  }
+
+  toggleView(): void {
+    this.isListView = !this.isListView;
+  }
+
+  onFileSelected(event: any): void {
+    if (event.target.files.length > 0) {
+      this.selectedFile = event.target.files[0];
+
       const reader = new FileReader();
-      reader.onload = (e: any) => { this.uploadedImage = e.target.result; };
-      reader.readAsDataURL(file);
+      reader.onload = (e: any) => {
+        this.uploadedImage = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(this.selectedFile as Blob);
     }
   }
 
-  // ฟังก์ชันบันทึก (รองรับทั้งเพิ่มใหม่ และ แก้ไข)
-  onSubmit() {
-    if (this.teacherForm.valid) {
-      const formValues = this.teacherForm.value;
+  resetForm(): void {
+    this.teacherForm.reset();
+    this.selectedFile = null;
+    this.isEditMode = false;
+    this.currentEditId = '';
+    this.uploadedImage = 'https://via.placeholder.com/150';
+    this.teacherForm.get('teacherId')?.enable();
+    this.cdr.detectChanges();
+  }
 
-      const teacherData: Teacher = {
-        teacherId: formValues.teacherId || '',
-        teacherName: formValues.teacherName || '',
-        department: formValues.department || '',
-        teacherPicture: 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + formValues.teacherId,
-        customImage: this.uploadedImage.includes('base64') ? this.uploadedImage : undefined
-      };
+  cancelEdit(): void {
+    this.resetForm();
+  }
+
+  editTeacher(index: number): void {
+    const teacher = this.teachers[index];
+
+    // 🚀 ดักจับข้อมูลผี: ถ้าในฐานข้อมูลไม่มีรหัสอาจารย์ ให้เด้งเตือนและหยุดการทำงาน
+    if (!teacher.teacherId || teacher.teacherId.trim() === '') {
+      alert('❌ ไม่สามารถแก้ไขได้: ข้อมูลนี้ไม่มีรหัสอาจารย์ (ข้อมูลอาจไม่สมบูรณ์)');
+      return;
+    }
+
+    this.isEditMode = true;
+    this.currentEditId = teacher.teacherId;
+
+    this.teacherForm.patchValue({
+      teacherId: teacher.teacherId,
+      teacherName: teacher.teacherName,
+      department: teacher.department
+    });
+
+    this.teacherForm.get('teacherId')?.disable();
+
+    if (teacher.teacherPicture) {
+      this.uploadedImage = 'http://localhost:3000/download/images/' + teacher.teacherPicture;
+    } else {
+      this.uploadedImage = 'https://via.placeholder.com/150';
+    }
+    this.cdr.detectChanges();
+  }
+
+  deleteTeacher(index: number): void {
+    const teacher = this.teachers[index];
+    const id = teacher.teacherId;
+
+    // 🚀 ดักจับข้อมูลผี: ถ้าข้อมูลไม่มีรหัส ไม่ให้ส่ง API ไปลบ เพราะเซิร์ฟเวอร์จะพัง
+    if (!id || id.trim() === '') {
+      alert('❌ ไม่สามารถลบได้: ข้อมูลนี้ไม่มีรหัสอาจารย์อยู่ในระบบ');
+      return;
+    }
+
+    if (confirm(`คุณต้องการลบข้อมูลอาจารย์รหัส ${id} ใช่หรือไม่?`)) {
+      this.teacherService.deleteData(id).subscribe({
+        next: (res: any): void => {
+          if (res.result === 1) {
+            alert('ลบข้อมูลสำเร็จ! ✅');
+            this.getData();
+          } else {
+            alert('ลบข้อมูลไม่สำเร็จ ❌ (อาจารย์ท่านนี้อาจมีข้อมูลอยู่ในระบบอื่น): ' + res.message);
+          }
+        },
+        error: (err: any): void => {
+          console.error(err);
+          alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+        }
+      });
+    }
+  }
+
+  onSubmit(): void {
+    if (this.teacherForm.valid || this.isEditMode) {
+      const formValues = this.teacherForm.getRawValue();
+      const formData = new FormData();
+
+      formData.append('teacherId', formValues.teacherId || '');
+      formData.append('teacherName', formValues.teacherName || '');
+      formData.append('department', formValues.department || '');
+
+      if (this.selectedFile) {
+        formData.append('image', this.selectedFile);
+      }
 
       if (this.isEditMode) {
-        // 🔄 โหมดแก้ไข: บันทึกทับตำแหน่งเดิม
-        // เช็คว่าถ้าไม่ได้เปลี่ยนรูป ให้ใช้รูปเดิม
-        const originalTeacher = this.teachers[this.editingIndex];
-        teacherData.customImage = teacherData.customImage ? teacherData.customImage : originalTeacher.customImage;
-
-        this.teachers[this.editingIndex] = teacherData;
-
-        alert('แก้ไขข้อมูลอาจารย์เรียบร้อย!');
-        this.cancelEdit(); // ออกจากโหมดแก้ไข
+        this.teacherService.updateData(this.currentEditId, formData).subscribe({
+          next: (res: any): void => {
+            if (res.result === 1) {
+              alert('แก้ไขข้อมูลอาจารย์สำเร็จ! ✅');
+              this.resetForm();
+              this.getData();
+            } else {
+              alert('แก้ไขข้อมูลไม่สำเร็จ ❌: ' + res.message);
+            }
+          },
+          error: (err: any): void => {
+            console.error(err);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+          }
+        });
       } else {
-        // ➕ โหมดเพิ่มใหม่
-        this.teachers.push(teacherData);
-        alert('เพิ่มอาจารย์ท่านใหม่เรียบร้อย!');
-        this.resetForm();
+        this.teacherService.insertData(formData).subscribe({
+          next: (res: any): void => {
+            if (res.result === 1) {
+              alert('เพิ่มข้อมูลอาจารย์สำเร็จ! ✅');
+              this.resetForm();
+              this.getData();
+            } else {
+              alert('เพิ่มข้อมูลไม่สำเร็จ! ❌ ' + res.message);
+            }
+          },
+          error: (err: any): void => {
+            console.error(err);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+          }
+        });
       }
     } else {
       this.teacherForm.markAllAsTouched();
       alert('กรุณากรอกข้อมูลให้ครบถ้วน');
     }
   }
-
-  // ฟังก์ชันเตรียมข้อมูลเพื่อแก้ไข
-  editTeacher(index: number) {
-    this.isEditMode = true;
-    this.editingIndex = index;
-    const t = this.teachers[index];
-
-    // ดึงข้อมูลใส่ฟอร์ม
-    this.teacherForm.patchValue({
-      teacherId: t.teacherId,
-      teacherName: t.teacherName,
-      department: t.department
-    });
-
-    // ดึงรูปมาโชว์
-    this.uploadedImage = t.customImage ? t.customImage : t.teacherPicture;
-
-    // เลื่อนหน้าจอขึ้นไปที่ฟอร์ม (UX)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  // ฟังก์ชันลบข้อมูล 🗑️
-  deleteTeacher(index: number) {
-    if (confirm('ยืนยันการลบข้อมูลอาจารย์ท่านนี้?')) {
-      this.teachers.splice(index, 1);
-    }
-  }
-
-  // ยกเลิกการแก้ไข
-  cancelEdit() {
-    this.isEditMode = false;
-    this.editingIndex = -1;
-    this.resetForm();
-  }
-
-  resetForm() {
-    this.teacherForm.reset();
-    this.uploadedImage = 'https://via.placeholder.com/150?text=No+Image';
-  }
-
-  toggleView() { this.isListView = !this.isListView; }
 }

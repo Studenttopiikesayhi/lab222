@@ -10,12 +10,12 @@
     </div>
     <div class="card-body">
       <label>ความกว้าง:</label>
-      <input type="number" [(ngModel)]="width">
+      <input type="number" id="recWidth" [(ngModel)]="width">
 
       <label>ความยาว:</label>
-      <input type="number" [(ngModel)]="length">
+      <input type="number" id="recHeight" [(ngModel)]="length">
 
-      <button (click)="calRect()" class="btn-purple">คำนวณ</button>
+      <button id="recButton" (click)="calRect()" class="btn-purple">คำนวณ</button>
 
       <div class="result">
         ผลลัพธ์: <b>{{ rectArea | number:'1.0-2' }}</b> ตร.ม.

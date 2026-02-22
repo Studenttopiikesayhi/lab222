@@ -1,38 +1,42 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+// 🚀 ต้องมี FormsModule เพื่อให้ [(ngModel)] ใน HTML ทำงานได้
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common'; // เพิ่ม CommonModule เพื่อใช้ Pipe จัดตัวเลข
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [CommonModule, FormsModule], // 🚀 ใส่ FormsModule ตรงนี้
   templateUrl: './home-page.html',
-  styleUrl: './home-page.css'
+  styleUrls: ['./home-page.css']
 })
 export class HomePage {
-  // --- 1. ส่วนของสี่เหลี่ยม (Rectangle) ---
+  // ตัวแปรสำหรับสี่เหลี่ยม
   width: number = 0;
   length: number = 0;
   rectArea: number = 0;
 
-  calRect() {
-    this.rectArea = this.width * this.length;
-  }
-
-  // --- 2. ส่วนของสามเหลี่ยม (Triangle) ---
+  // ตัวแปรสำหรับสามเหลี่ยม
   triBase: number = 0;
   triHeight: number = 0;
   triArea: number = 0;
 
-  calTri() {
-    this.triArea = 0.5 * this.triBase * this.triHeight;
-  }
-
-  // --- 3. ส่วนของวงกลม (Circle) ---
+  // ตัวแปรสำหรับวงกลม
   radius: number = 0;
   cirArea: number = 0;
 
-  calCircle() {
+  // ฟังก์ชันคำนวณพื้นที่สี่เหลี่ยม (กว้าง x ยาว)
+  calRect(): void {
+    this.rectArea = this.width * this.length;
+  }
+
+  // ฟังก์ชันคำนวณพื้นที่สามเหลี่ยม (1/2 x ฐาน x สูง)
+  calTri(): void {
+    this.triArea = 0.5 * this.triBase * this.triHeight;
+  }
+
+  // ฟังก์ชันคำนวณพื้นที่วงกลม (Pi x r^2)
+  calCircle(): void {
     this.cirArea = Math.PI * (this.radius * this.radius);
   }
 }

@@ -1,115 +1,178 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms'; // 👈 นำเข้าเครื่องมือ Pro
-import { Student } from '../../classes/student-class';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { StudentService } from '../../services/student-service';
 
 @Component({
   selector: 'app-student-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule], // 👈 ใช้ Reactive Forms
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './student-page.html',
-  styleUrl: './student-page.css'
+  styleUrls: ['./student-page.css']
 })
-export class StudentPage {
-  isListView: boolean = true;
-  uploadedImage: string = 'https://via.placeholder.com/150?text=No+Image';
-
-  // ตัวแปรเช็คว่ากำลัง "แก้ไข" อยู่หรือเปล่า?
+export class StudentPage implements OnInit {
+  studentForm: FormGroup;
+  selectedFile: File | null = null;
   isEditMode: boolean = false;
-  editingStudentIndex: number = -1; // จำตำแหน่งคนที่จะแก้
+  students: any[] = [];
+  isListView: boolean = true;
+  uploadedImage: any = 'https://via.placeholder.com/150';
+  currentEditId: string = '';
 
-  // 1. สร้าง Form Control + กฎเหล็ก (Validators) 🛡️
-  studentForm = new FormGroup({
-    studentId: new FormControl('', [Validators.required]),
-    name: new FormControl('', [Validators.required]),
-    score: new FormControl(0, [Validators.required, Validators.min(0), Validators.max(100)]), // คะแนนต้อง 0-100
-    gender: new FormControl('male', [Validators.required])
-  });
+  constructor(
+    private fb: FormBuilder,
+    private studentService: StudentService,
+    private cdr: ChangeDetectorRef
+  ) {
+    this.studentForm = this.fb.group({
+      studentId: ['', Validators.required],
+      name: ['', Validators.required],
+      gender: ['', Validators.required],
+      score: ['', Validators.required]
+    });
+  }
 
-  students: Student[] = [
-    { studentId: '6601', name: 'นายสมชาย (เรียนเก่ง)', score: 85, gender: 'male' },
-    { studentId: '6602', name: 'นางสาวสมหญิง (พยายาม)', score: 49, gender: 'female' },
-    { studentId: '6603', name: 'นายจาทร (ปานกลาง)', score: 62, gender: 'male' },
-    { studentId: '6604', name: 'นางสาวมานี (ท็อปห้อง)', score: 95, gender: 'female' },
-    { studentId: '6605', name: 'นายชูใจ (ขาดเรียน)', score: 0, gender: 'male' }
-  ];
+  ngOnInit(): void {
+    this.getData();
+  }
 
-  onFileSelected(event: any) {
-    const file: File = event.target.files[0];
-    if (file) {
+  getData(): void {
+    this.studentService.getAll().subscribe({
+      next: (res: any): void => {
+        if (res && res.result === 1) {
+          this.students = res.data || [];
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err: any): void => console.error('Error fetching data:', err)
+    });
+  }
+
+  toggleView(): void {
+    this.isListView = !this.isListView;
+  }
+
+  onFileSelected(event: any): void {
+    if (event.target.files.length > 0) {
+      this.selectedFile = event.target.files[0];
       const reader = new FileReader();
-      reader.onload = (e: any) => { this.uploadedImage = e.target.result; };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  // 2. ฟังก์ชันบันทึก (ฉลาดขึ้น: แยกแยะได้ว่า "เพิ่มใหม่" หรือ "บันทึกทับ")
-  onSubmit() {
-    if (this.studentForm.valid) {
-      const formValues = this.studentForm.value;
-
-      const studentData: Student = {
-        studentId: formValues.studentId || '',
-        name: formValues.name || '',
-        score: formValues.score || 0,
-        gender: formValues.gender || 'male',
-        customImage: this.uploadedImage.includes('base64') ? this.uploadedImage : undefined
+      reader.onload = (e: any) => {
+        this.uploadedImage = e.target.result;
+        this.cdr.detectChanges();
       };
-
-      if (this.isEditMode) {
-        // 🔄 กรณีแก้ไข: บันทึกทับคนเดิม
-        this.students[this.editingStudentIndex] = {
-          ...studentData,
-          // ถ้าไม่ได้อัปรูปใหม่ ให้ใช้รูปเดิม (logic นี้ซับซ้อนนิดนึงแต่ work)
-          customImage: studentData.customImage ? studentData.customImage : this.students[this.editingStudentIndex].customImage
-        };
-        alert('แก้ไขข้อมูลเรียบร้อย!');
-        this.isEditMode = false;
-        this.editingStudentIndex = -1;
-      } else {
-        // ➕ กรณีเพิ่มใหม่
-        this.students.push(studentData);
-        alert('เพิ่มนักเรียนเรียบร้อย!');
-      }
-
-      // Reset Form
-      this.studentForm.reset({ score: 0, gender: 'male' }); // reset แล้วตั้งค่า default
-      this.uploadedImage = 'https://via.placeholder.com/150?text=No+Image';
-    } else {
-      this.studentForm.markAllAsTouched(); // ฟ้องแดงทั้งแผง
-      alert('กรุณากรอกข้อมูลให้ถูกต้อง (คะแนนต้อง 0-100)');
+      reader.readAsDataURL(this.selectedFile as Blob);
     }
   }
 
-  // 3. ฟังก์ชันดึงข้อมูลมาแก้ไข (Future Feature 🔮)
-  editStudent(index: number) {
-    const s = this.students[index];
-    this.isEditMode = true;
-    this.editingStudentIndex = index;
+  resetForm(): void {
+    this.studentForm.reset();
+    this.selectedFile = null;
+    this.isEditMode = false;
+    this.currentEditId = '';
+    this.uploadedImage = 'https://via.placeholder.com/150';
+    this.studentForm.get('studentId')?.enable();
+    this.cdr.detectChanges();
+  }
 
-    // ยัดข้อมูลใส่ฟอร์ม (Magic ของ Reactive Forms!)
+  cancelEdit(): void {
+    this.resetForm();
+  }
+
+  editStudent(index: number): void {
+    this.isEditMode = true;
+    const student = this.students[index];
+    this.currentEditId = student.studentId;
+
     this.studentForm.patchValue({
-      studentId: s.studentId,
-      name: s.name,
-      score: s.score,
-      gender: s.gender
+      studentId: student.studentId,
+      name: student.name,
+      gender: student.gender,
+      score: student.score
     });
 
-    // เอารูปมาโชว์ด้วย
-    if (s.customImage) {
-      this.uploadedImage = s.customImage;
+    this.studentForm.get('studentId')?.disable();
+
+    if (student.studentPicture) {
+      this.uploadedImage = 'http://localhost:3000/download/images/' + student.studentPicture;
     } else {
-      this.uploadedImage = `https://api.dicebear.com/9.x/avataaars/svg?seed=${s.studentId}`;
+      this.uploadedImage = 'https://via.placeholder.com/150';
+    }
+    this.cdr.detectChanges();
+  }
+
+  deleteStudent(index: number): void {
+    const student = this.students[index];
+    const id = student.studentId;
+
+    if (confirm(`คุณต้องการลบข้อมูลนักเรียนรหัส ${id} ใช่หรือไม่?`)) {
+      this.studentService.deleteData(id).subscribe({
+        next: (res: any): void => {
+          if (res.result === 1) {
+            alert('ลบข้อมูลสำเร็จ! ✅');
+            this.getData();
+          } else {
+            alert('ลบข้อมูลไม่สำเร็จ ❌: ' + res.message);
+          }
+        },
+        error: (err: any): void => {
+          console.error(err);
+          alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+        }
+      });
     }
   }
 
-  // ปุ่มยกเลิกการแก้ไข
-  cancelEdit() {
-    this.isEditMode = false;
-    this.editingStudentIndex = -1;
-    this.studentForm.reset({ score: 0, gender: 'male' });
-    this.uploadedImage = 'https://via.placeholder.com/150?text=No+Image';
-  }
+  onSubmit(): void {
+    if (this.studentForm.valid || this.isEditMode) {
+      const formValues = this.studentForm.getRawValue();
+      const formData = new FormData();
 
-  toggleView() { this.isListView = !this.isListView; }
+      formData.append('studentId', formValues.studentId || '');
+      formData.append('name', formValues.name || '');
+      formData.append('gender', formValues.gender || '');
+      formData.append('score', formValues.score?.toString() || '0');
+
+      if (this.selectedFile) {
+        formData.append('image', this.selectedFile);
+      }
+
+      if (this.isEditMode) {
+        this.studentService.updateData(this.currentEditId, formData).subscribe({
+          next: (res: any): void => {
+            if (res.result === 1) {
+              alert('แก้ไขข้อมูลนักเรียนสำเร็จ! ✅');
+              this.resetForm();
+              this.getData();
+            } else {
+              alert('แก้ไขข้อมูลไม่สำเร็จ ❌: ' + res.message);
+            }
+          },
+          error: (err: any): void => {
+            console.error(err);
+            alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+          }
+        });
+      } else {
+        this.studentService.insertData(formData).subscribe({
+          next: (res: any): void => {
+            if (res.result === 1) {
+              alert('เพิ่มข้อมูลนักเรียนสำเร็จ! ✅');
+              this.resetForm();
+              this.getData();
+            } else {
+              // เปลี่ยนมาแสดงข้อความ Error จาก MySQL โดยตรงเลย
+              alert('เพิ่มข้อมูลไม่สำเร็จ! ❌ ' + res.message);
+            }
+          },
+          error: (err: any): void => {
+            console.error(err);
+            alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+          }
+        });
+      }
+    } else {
+      this.studentForm.markAllAsTouched();
+      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+    }
+  }
 }

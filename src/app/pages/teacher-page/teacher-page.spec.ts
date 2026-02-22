@@ -1,18 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TeacherPage } from './teacher-page';
+// 🛠️ แก้ไข: เปลี่ยนชื่อคลาสเป็น TeacherPageComponent ให้ตรงกับไฟล์หลัก
+import { TeacherPageComponent } from './teacher-page';
 
-describe('TeacherPage', () => {
-  let component: TeacherPage;
-  let fixture: ComponentFixture<TeacherPage>;
+describe('TeacherPageComponent', () => {
+  let component: TeacherPageComponent;
+  let fixture: ComponentFixture<TeacherPageComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TeacherPage]
+      imports: [TeacherPageComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
-    fixture = TestBed.createComponent(TeacherPage);
+    fixture = TestBed.createComponent(TeacherPageComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
