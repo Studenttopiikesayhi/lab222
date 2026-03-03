@@ -10,7 +10,8 @@ import { StudentService } from '../../services/student-service';
   templateUrl: './student-page.html',
   styleUrls: ['./student-page.css']
 })
-export class StudentPage implements OnInit {
+// 🚀 เปลี่ยนชื่อเป็น StudentPageComponent ให้ตรงกับใน app.routes.ts
+export class StudentPageComponent implements OnInit {
   studentForm: FormGroup;
   selectedFile: File | null = null;
   isEditMode: boolean = false;
@@ -33,18 +34,20 @@ export class StudentPage implements OnInit {
   }
 
   ngOnInit(): void {
+    // 🚀 เรียกใช้ฟังก์ชันดึงข้อมูลทันทีที่เปิดหน้าเว็บ
     this.getData();
   }
 
   getData(): void {
     this.studentService.getAll().subscribe({
       next: (res: any): void => {
+        // เช็คว่า result เป็น 1 ไหม ตามที่ Backend ส่งมา
         if (res && res.result === 1) {
           this.students = res.data || [];
           this.cdr.detectChanges();
         }
       },
-      error: (err: any): void => console.error('Error fetching data:', err)
+      error: (err: any): void => console.error('ดึงข้อมูลนักเรียนไม่ได้:', err)
     });
   }
 
@@ -160,7 +163,6 @@ export class StudentPage implements OnInit {
               this.resetForm();
               this.getData();
             } else {
-              // เปลี่ยนมาแสดงข้อความ Error จาก MySQL โดยตรงเลย
               alert('เพิ่มข้อมูลไม่สำเร็จ! ❌ ' + res.message);
             }
           },

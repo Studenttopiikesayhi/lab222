@@ -12,7 +12,7 @@ import { StudentService } from '../../services/student-service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login-page.html',
-  styleUrls: ['./login-page.css'] // (ถ้าบอสไม่มีไฟล์ css ลบบรรทัดนี้ออกได้เลยครับ)
+  styleUrls: ['./login-page.css']
 })
 export class LoginPageComponent {
   loginForm: FormGroup;
@@ -20,7 +20,7 @@ export class LoginPageComponent {
   constructor(
     private fb: FormBuilder,
     private teacherService: TeacherService,
-    private studentService: StudentService, // 👈 เรียกใช้งาน Service ของนักศึกษา
+    private studentService: StudentService,
     private router: Router
   ) {
     // 💡 ปรับฟอร์มให้มี 3 ช่อง: role, userId, password
@@ -52,7 +52,7 @@ export class LoginPageComponent {
         });
       } else if (selectedRole === 'student') {
         this.studentService.login(credentials).subscribe({
-          next: (res: any) => this.handleLoginResponse(res, '/student'), // ถ้าผ่านให้เด้งไปหน้า student
+          next: (res: any) => this.handleLoginResponse(res, '/student'),
           error: (err: any) => this.handleError(err)
         });
       }
@@ -63,13 +63,20 @@ export class LoginPageComponent {
     }
   }
 
-  // ฟังก์ชันแยกสำหรับจัดการ Alert และการเด้งเปลี่ยนหน้า
+  // ฟังก์ชันสำหรับจัดการ Alert การเก็บ Token และการเด้งเปลี่ยนหน้า
   private handleLoginResponse(res: any, targetRoute: string): void {
     if (res.result === 1 && res.status === 200) {
       alert('✅ ' + res.message);
-      // สมมติว่าเก็บข้อมูลไว้ในเครื่องชั่วคราว
+
+      // 🚀 จุดสำคัญที่เพิ่มเข้ามา: เก็บ "ตั๋ว" (Token) ลงเครื่องเพื่อใช้ในการดึงข้อมูล
+      if (res.token) {
+        localStorage.setItem('token', res.token);
+      }
+
+      // เก็บข้อมูลผู้ใช้เดิมที่บอสทำไว้
       localStorage.setItem('currentUser', JSON.stringify(res.data));
-      // เด้งไปหน้าที่ถูกต้อง (หน้าอาจารย์ หรือ หน้านักศึกษา)
+
+      // เด้งไปหน้าที่ถูกต้อง
       this.router.navigate([targetRoute]);
     } else {
       alert('❌ ' + res.message);
