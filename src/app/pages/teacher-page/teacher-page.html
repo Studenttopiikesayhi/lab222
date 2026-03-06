@@ -1,6 +1,11 @@
 <div class="container" style="padding: 20px; font-family: 'Kanit', sans-serif;">
 
-  <h1 style="color: #333; margin-bottom: 20px; text-align: center;">👨‍🏫 Teacher Management System</h1>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1 style="color: #333; margin: 0; text-align: center; flex-grow: 1;">👨‍🏫 Teacher Management System</h1>
+    <button (click)="logout()" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); transition: 0.2s;">
+      🚪 ออกจากระบบ
+    </button>
+  </div>
 
   <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-bottom: 30px; border-left: 5px solid #4f46e5;">
 
@@ -19,21 +24,21 @@
         <div style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
           <div style="display: flex; gap: 15px;">
             <div style="flex: 1;">
-              <input type="text" formControlName="teacherId" placeholder="รหัสอาจารย์ (ID) *" class="form-input" style="width: 100%;" [ngStyle]="{'background': isEditMode ? '#f3f4f6' : 'white'}">
-              <div *ngIf="teacherForm.get('teacherId')?.invalid && teacherForm.get('teacherId')?.touched" class="error-msg">
+              <input type="text" formControlName="teacherId" placeholder="รหัสอาจารย์ (ID) *" class="form-input" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;" [ngStyle]="{'background': isEditMode ? '#f3f4f6' : 'white'}">
+              <div *ngIf="teacherForm.get('teacherId')?.invalid && teacherForm.get('teacherId')?.touched" class="error-msg" style="color: red; font-size: 12px; margin-top: 5px;">
                 ⚠️ กรุณากรอกรหัสอาจารย์
               </div>
             </div>
 
             <div style="flex: 1;">
-              <input type="text" formControlName="department" placeholder="สาขาวิชา *" class="form-input" style="width: 100%;">
-              <div *ngIf="teacherForm.get('department')?.invalid && teacherForm.get('department')?.touched" class="error-msg">⚠️ กรุณากรอกสาขาวิชา</div>
+              <input type="text" formControlName="department" placeholder="สาขาวิชา *" class="form-input" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+              <div *ngIf="teacherForm.get('department')?.invalid && teacherForm.get('department')?.touched" class="error-msg" style="color: red; font-size: 12px; margin-top: 5px;">⚠️ กรุณากรอกสาขาวิชา</div>
             </div>
           </div>
 
           <div>
-            <input type="text" formControlName="teacherName" placeholder="ชื่อ-นามสกุล *" class="form-input" style="width: 100%;">
-            <div *ngIf="teacherForm.get('teacherName')?.invalid && teacherForm.get('teacherName')?.touched" class="error-msg">⚠️ กรุณากรอกชื่อ-นามสกุล</div>
+            <input type="text" formControlName="teacherName" placeholder="ชื่อ-นามสกุล *" class="form-input" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <div *ngIf="teacherForm.get('teacherName')?.invalid && teacherForm.get('teacherName')?.touched" class="error-msg" style="color: red; font-size: 12px; margin-top: 5px;">⚠️ กรุณากรอกชื่อ-นามสกุล</div>
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 5px;">

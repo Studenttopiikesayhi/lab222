@@ -7,10 +7,10 @@ export const authGuard = () => {
   const token = localStorage.getItem('token'); // ไปดูในเก๊ะว่ามีตั๋วไหม
 
   if (token) {
-    return true; // มีตั๋ว... เชิญผ่านได้ครับบอส!
+    return true; // มีตั๋ว... เชิญผ่านได้
   } else {
     // ไม่มีตั๋ว... เด้งกลับไปหน้า login ทันที
-    alert('บอสครับ! กรุณาเข้าสู่ระบบก่อนนะ');
+    alert('กรุณาเข้าสู่ระบบก่อนนะ');
     router.navigate(['/login']);
     return false;
   }

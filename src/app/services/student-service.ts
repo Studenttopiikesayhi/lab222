@@ -27,9 +27,11 @@ export class StudentService {
   }
 
   // ==========================================
-  // 🔐 ระบบ Login (ของนักศึกษา)
+  // 🛑 ปิดระบบ Login (ของนักศึกษา) ตามคำสั่งอาจารย์ (Teacher Account only)
   // ==========================================
+  /*
   public login(credentials: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials);
   }
+  */
 }

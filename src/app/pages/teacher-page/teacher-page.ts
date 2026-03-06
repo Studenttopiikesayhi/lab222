@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router'; // 👈 นำเข้า Router สำหรับการเปลี่ยนหน้า
 import { TeacherService } from '../../services/teacher-service';
 
 @Component({
@@ -22,7 +23,8 @@ export class TeacherPageComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private teacherService: TeacherService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router // 👈 เพิ่ม Router ใน constructor
   ) {
     this.teacherForm = this.fb.group({
       teacherId: ['', Validators.required],
@@ -183,6 +185,15 @@ export class TeacherPageComponent implements OnInit {
     } else {
       this.teacherForm.markAllAsTouched();
       alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+    }
+  }
+
+  // 🚀 ฟังก์ชัน Logout ใหม่โครตๆ
+  logout(): void {
+    if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+      localStorage.removeItem('token'); // ฉีกตั๋วทิ้ง
+      localStorage.removeItem('currentUser'); // ล้างข้อมูลผู้ใช้
+      this.router.navigate(['/login']); // ส่งกลับหน้า Login
     }
   }
 }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
-// 🚀 นำเข้า Services ทั้งสองตัว (เช็ค path ให้ตรงกับของบอสนะครับ)
+// 🚀 นำเข้า Services ทั้งสองตัว (เช็ค path ให้ตรงกัน)
 import { TeacherService } from '../../services/teacher-service';
 import { StudentService } from '../../services/student-service';
 
@@ -36,26 +36,38 @@ export class LoginPageComponent {
       const formValues = this.loginForm.getRawValue();
       const selectedRole = formValues.role; // ดูว่าผู้ใช้เลือกเป็น teacher หรือ student
 
-      // 💡 แปลงตัวแปร userId ให้เป็นชื่อที่ Backend ต้องการ (teacherId หรือ studentId)
+      // 💡 แปลงตัวแปร userId ให้เป็นชื่อที่ Backend ต้องการ (teacherId)
       let credentials: any = {};
       if (selectedRole === 'teacher') {
         credentials = { teacherId: formValues.userId, password: formValues.password };
-      } else {
+      }
+      // ==========================================
+      // 🛑 ปิดการสร้าง credentials ของนักศึกษา
+      // ==========================================
+      /*
+      else {
         credentials = { studentId: formValues.userId, password: formValues.password };
       }
+      */
 
-      // 🚀 แยกการยิง API ตามสถานะที่เลือก
+      // 🚀 แยกการยิง API ตามสถานะที่เลือก (ตอนนี้เหลือแต่อาจารย์)
       if (selectedRole === 'teacher') {
         this.teacherService.login(credentials).subscribe({
           next: (res: any) => this.handleLoginResponse(res, '/teacher'),
           error: (err: any) => this.handleError(err)
         });
-      } else if (selectedRole === 'student') {
+      }
+      // ==========================================
+      // 🛑 ปิดระบบ Login ของนักศึกษา (Teacher Account only)
+      // ==========================================
+      /*
+      else if (selectedRole === 'student') {
         this.studentService.login(credentials).subscribe({
           next: (res: any) => this.handleLoginResponse(res, '/student'),
           error: (err: any) => this.handleError(err)
         });
       }
+      */
 
     } else {
       this.loginForm.markAllAsTouched();
@@ -73,7 +85,7 @@ export class LoginPageComponent {
         localStorage.setItem('token', res.token);
       }
 
-      // เก็บข้อมูลผู้ใช้เดิมที่บอสทำไว้
+      // เก็บข้อมูลผู้ใช้เดิมที่ทำไว้
       localStorage.setItem('currentUser', JSON.stringify(res.data));
 
       // เด้งไปหน้าที่ถูกต้อง
